@@ -1,0 +1,7 @@
+{
+  "name": "HealMe chat server",
+  "description": "HealMe chat server",
+  "repository": "https://github.com/AlTavares/SocketChat",
+  "logo": "/public/node.svg",
+  "keywords": ["node", "express", "static"]
+}
