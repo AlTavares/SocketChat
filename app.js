@@ -64,6 +64,7 @@ io.on('connection', function (socket) {
     socket.username = username
     users[username] = socket.id
     console.log(users)
+    deliverMessages(username)
   })
 
   socket.on('sendMessage', function (message) {
@@ -94,7 +95,18 @@ function deliverMessages(username) {
 
     console.log('Found %d messages for %s', result.docs.length, username);
     for (var i = 0; i < result.docs.length; i++) {
-      console.log('  message: %s', result.docs[i].message);
+      var doc = result.docs[i]
+      var message = doc.message
+      console.log('  message: ' + message);
+      healmeDB.destroy(doc._id, doc._rev, function (err, body) {
+        if (!err) {
+          console.log(body);
+        }
+        else {
+          io.to(users[message.recipient]).emit('messageReceived', message)
+        }
+      });
+
     }
   });
 }
