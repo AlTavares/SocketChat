@@ -1,3 +1,4 @@
 launchConfigurations/
 .git/
 env.json
+node_modules

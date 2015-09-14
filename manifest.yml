@@ -1,7 +1,7 @@
 applications:
 - services:
   - HealMe-cloudantNoSQLDB
-  - HealMe-imfpush
+  # - HealMe-imfpush
   - RedisHealMe
   - Auto-Scaling-sn
   disk_quota: 1024M

@@ -1,9 +1,14 @@
 
-//prod
-// var env = JSON.parse(process.env.VCAP_SERVICES)
-//dev
 
-var env = require('./env.json');
+var env
+if (!process.env.VCAP_SERVICES) {
+  console.log('running local')
+  env = require('./env.json');
+}
+else{
+  console.log('running on cloud')
+  env = JSON.parse(process.env.VCAP_SERVICES)
+}
 
 var express = require('express');
 var app = express();
@@ -99,8 +104,8 @@ function deliverMessages(username) {
       var message = doc.message
       console.log('  message: ' + message);
       healmeDB.destroy(doc._id, doc._rev, function (err, body) {
-        if (!err) {
-          console.log(body);
+        if (err) {
+          console.log(err);
         }
         else {
           io.to(users[message.recipient]).emit('messageReceived', message)
