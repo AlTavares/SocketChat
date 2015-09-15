@@ -5,7 +5,7 @@ if (!process.env.VCAP_SERVICES) {
   console.log('running local')
   env = require('./env.json');
 }
-else{
+else {
   console.log('running on cloud')
   env = JSON.parse(process.env.VCAP_SERVICES)
 }
@@ -74,6 +74,7 @@ io.on('connection', function (socket) {
 
   socket.on('sendMessage', function (message) {
     if (users[message.recipient]) {
+      logMessage('Sending Message', message)
       io.to(users[message.recipient]).emit('messageReceived', message)
       return
     }
@@ -93,23 +94,24 @@ io.on('connection', function (socket) {
 })
 
 function deliverMessages(username) {
-  healmeDB.find({ selector: { username: username } }, function (er, result) {
+  healmeDB.find({ selector: { username: username }}, function (er, result) {
     if (er) {
-      throw er;
+      console.log(er);
+      return
     }
 
     console.log('Found %d messages for %s', result.docs.length, username);
     for (var i = 0; i < result.docs.length; i++) {
       var doc = result.docs[i]
       var message = doc.message
-      console.log('  message: ' + message);
+      logMessage('Sending Message', message)
+      io.to(users[message.recipient]).emit('messageReceived', message)
       healmeDB.destroy(doc._id, doc._rev, function (err, body) {
         if (err) {
           console.log(err);
+          return;
         }
-        else {
-          io.to(users[message.recipient]).emit('messageReceived', message)
-        }
+
       });
 
     }
@@ -117,12 +119,21 @@ function deliverMessages(username) {
 }
 
 function saveMessage(username, message) {
-  healmeDB.insert({ username: username, message: message }, function (err, body, header) {
+  healmeDB.insert({ username: username, message: message, date: message.date }, function (err, body, header) {
     if (err) {
       return console.log('[message.insert] ', err.message);
     }
-    console.log('You have inserted the message.');
-    console.log(body);
+    logMessage('You have inserted the message.', message, body);
   });
 
+}
+
+function logMessage(state, message, body) {
+  console.log(state)
+  if (body) {
+    console.log('body: ' + body);
+  }
+  console.log('  sender: ' + message.sender);
+  console.log('  recipient: ' + message.recipient);
+  console.log('  message: ' + message.message);
 }
