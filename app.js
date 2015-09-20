@@ -81,8 +81,8 @@ io.on('connection', function (socket) {
     saveMessage(message.recipient, message)
   })
 
-  socket.on('messageDelivered', function (id, sender) {
-    io.to(users[sender]).emit('messageDelivered', id, sender)
+  socket.on('messageDelivered', function (id, sender, recipient) {
+    io.to(users[sender]).emit('messageDelivered', id, recipient)
   })
 
   socket.on('disconnect', function () {
@@ -94,7 +94,8 @@ io.on('connection', function (socket) {
 })
 
 function deliverMessages(username) {
-  healmeDB.find({ selector: { username: username }}, function (er, result) {
+  // healmeDB.find({ selector: { username: username }}, function (er, result) {
+  healmeDB.find({ selector: { username: username, date: { "$gt": 0 } }, sort: [{ date: 'asc' }] }, function (er, result) {
     if (er) {
       console.log(er);
       return
